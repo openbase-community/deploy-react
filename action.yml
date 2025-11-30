@@ -2,19 +2,9 @@ name: "Deploy Website to S3"
 description: "Builds and deploys a React website to S3"
 
 inputs:
-  organization:
-    description: "GitHub organization name"
-    required: true
   s3-prefix:
     description: "S3 folder/prefix where files should be uploaded (e.g., 'charm' or 'charm-staging')"
     required: true
-  gh-token:
-    description: "GitHub token for repository access"
-    required: true
-  ref:
-    description: "Git reference to checkout for react, project-react, and react-shared"
-    required: false
-    default: ${{ github.ref }}
   aws-access-key-id:
     description: "AWS Access Key ID"
     required: true
@@ -38,14 +28,6 @@ runs:
     - name: Checkout app repository
       uses: actions/checkout@v4
 
-    - name: Checkout react-shared repository
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ inputs.organization }}/react-shared
-        ref: ${{ inputs.ref }}
-        token: ${{ inputs.gh-token }}
-        path: react-shared
-
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
@@ -57,7 +39,7 @@ runs:
 
     - name: Build app
       shell: bash
-      run: REACT_SHARED=$GITHUB_WORKSPACE/react-shared S3_PREFIX=${{ inputs.s3-prefix }} VITE_BUILD_ENV=${{ inputs.build-env }} VITE_USE_CDN=true SENTRY_AUTH_TOKEN=${{ inputs.sentry-auth-token }} node_modules/.bin/vite build
+      run: S3_PREFIX=${{ inputs.s3-prefix }} VITE_BUILD_ENV=${{ inputs.build-env }} VITE_USE_CDN=true SENTRY_AUTH_TOKEN=${{ inputs.sentry-auth-token }} node_modules/.bin/vite build
 
     - name: Upload to S3
       uses: jakejarvis/s3-sync-action@master
